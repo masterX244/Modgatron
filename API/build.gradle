@@ -1,0 +1,25 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.0+'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'de.nplusc.izc'
+version = '0.0.1-SNAPSHOT'
+
+//java {
+//	toolchain {
+//		languageVersion = JavaLanguageVersion.of(17)
+//	}
+//}
+sourceCompatibility = 1.17
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.fazecast:jSerialComm:[2.0.0,3.0.0)'
+}

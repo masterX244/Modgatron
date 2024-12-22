@@ -1,0 +1,44 @@
+
+.program audio_bb
+.wrap_target
+set pins 1
+pull; dauer egal da noch keine bits gewiggled werden;
+set pins 0 [31]; //32 der 68 zyklen
+nop [31]; //64 der 68
+nop [2]; //68
+set x, 7; schleifenzähler; //68
+bitloop:
+    set pins, 1 [8]           ; 9 units 1 at start   //9const 16dep  8const
+    out pins, 1 [15]; wiggle out the volatile part
+    set pins, 0 [6]
+    jmp x-- bitloop; 
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include <stdio.h>
+static inline void audio_bb_program_init(PIO pio, uint sm, uint offset, uint pin) {
+    //pin=18; //fuckfix test
+    pio_sm_config c = audio_bb_program_get_default_config(offset);
+    // Map the state machine's OUT pin group to one pin, namely the `pin`
+    // parameter to this function.
+    sm_config_set_set_pins(&c, pin, 1);
+    sm_config_set_out_pins(&c, pin, 1);
+    // Set this pin's GPIO function (connect PIO to the pad)
+    pio_gpio_init(pio, pin);
+    
+    sm_config_set_out_shift(&c, true, false, 8);
+    // Set the pin direction to output at the PIO
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+    float div = (float)clock_get_hz(clk_sys) / 10000;
+    sm_config_set_clkdiv(&c, div);
+    // Load our configuration, and jump to the start of the program
+    pio_sm_set_clkdiv(pio,sm,div);
+    pio_sm_init(pio, sm, offset, &c);
+    // Set the state machine running
+    pio_sm_set_enabled(pio, sm, true);
+    }
+static inline void audio_bb_send(PIO pio, uint sm, uint8_t c) {  
+    pio_sm_put_blocking(pio, sm, (uint32_t)c);
+}
+%}

@@ -1,0 +1,43 @@
+.program servo_bb
+.wrap_target
+pull; dauer egal da noch keine bits gewiggled werden;
+set x, 7; schleifenzähler
+bitloop:                   ;
+    set pins, 1 [7]           ; constant 1 at packet begin, 10 units long, target length of unit=10
+    out y, 1 ; fetch bit to know if its a 1 or a zero
+    jmp !y bzero
+    nop [25] ; 25 units für 35 units total
+bzero:    
+    set pins 0[15];
+    jmp x-- bitloop; jmp is 2 long, ziel 16 units
+.wrap
+
+% c-sdk {
+#include "hardware/clocks.h"
+#include <stdio.h>
+static inline void servo_bb_program_init(PIO pio, uint sm, uint offset, uint pin) {
+    //pin=18; //fuckfix test
+    pio_sm_config c = servo_bb_program_get_default_config(offset);
+    // Map the state machine's OUT pin group to one pin, namely the `pin`
+    // parameter to this function.
+    sm_config_set_set_pins(&c, pin, 1);
+    sm_config_set_out_pins(&c, pin, 1);
+    // Set this pin's GPIO function (connect PIO to the pad)
+    pio_gpio_init(pio, pin);
+    
+    sm_config_set_out_shift(&c, true, false, 8);
+    // Set the pin direction to output at the PIO
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 1, true);
+    //uint32_t units_in_clocks = (clock_get_hz(clk_sys) /1000000)*10;
+    float div = (float)clock_get_hz(clk_sys) / 100000;
+    sm_config_set_clkdiv(&c, div);
+    // Load our configuration, and jump to the start of the program
+    pio_sm_set_clkdiv(pio,sm,div);
+    pio_sm_init(pio, sm, offset, &c);
+    // Set the state machine running
+    pio_sm_set_enabled(pio, sm, true);
+    }
+static inline void servo_bb_send(PIO pio, uint sm, uint8_t c) {  
+    pio_sm_put_blocking(pio, sm, (uint32_t)c);
+}
+%}

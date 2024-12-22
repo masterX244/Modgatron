@@ -1,0 +1,1 @@
+Modification documentation for the upgrades of https://store.killerbody.com/products/killerbody-transformers-megatron-wearable-helmet-collectible-megatron-voice-changer for more fine-grained control.
