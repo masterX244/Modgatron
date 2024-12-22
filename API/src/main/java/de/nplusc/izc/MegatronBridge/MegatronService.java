@@ -4,6 +4,8 @@ import de.nplusc.izc.MegatronBridge.Models.CustomAudio;
 import de.nplusc.izc.MegatronBridge.Models.MovementActions;
 import de.nplusc.izc.MegatronBridge.Models.OnboardAudio;
 import de.nplusc.izc.MegatronBridge.Models.RawAction;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ResourceUtils;
@@ -150,7 +152,8 @@ public class MegatronService
 
     private static List<InternalAudioMapping> loadMappings(){
         LinkedList list = new LinkedList<>();
-        try (BufferedReader in = new BufferedReader(new FileReader(ResourceUtils.getFile("classpath:audiomapping.lst")));){
+        Resource resource = new ClassPathResource("audiomapping.lst");
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(resource.getInputStream()))){
 
             in.lines().forEach(line->
             {
