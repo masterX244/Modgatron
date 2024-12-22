@@ -237,6 +237,7 @@ public class SerialSpammer
                     System.out.println("FINI");
                     System.err.println("FINI");
                     streamfile=null;
+                    streampointer=0;
                     startedStreamPlayback=false;
                 }
                 else
